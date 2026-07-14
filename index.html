@@ -118,6 +118,23 @@ h1,h2,h3{margin:0;text-wrap:balance}
 .mbar{height:14px;border-radius:999px;background:var(--card2);overflow:hidden;border:1px solid var(--line)}
 .mbar>div{height:100%;border-radius:999px;transition:width .5s cubic-bezier(.34,1.4,.64,1);min-width:0}
 
+/* water card */
+.watercard h2{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.wliters{color:var(--ink2);font-weight:700;font-size:12px;text-transform:none;letter-spacing:0}
+.wtank{position:relative;height:48px;border-radius:14px;background:var(--blue-soft);border:2px solid var(--line);overflow:hidden;margin-bottom:12px}
+.wfill{position:absolute;top:0;bottom:0;right:0;width:0;background:linear-gradient(180deg,#5cc8f9,var(--blue));transition:width .55s cubic-bezier(.34,1.4,.64,1);min-width:0;overflow:hidden}
+.wwave{position:absolute;top:3px;left:0;right:0;height:14px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='14'%3E%3Cpath d='M0 7 Q10 0 20 7 T40 7 V14 H0 Z' fill='white' fill-opacity='0.45'/%3E%3C/svg%3E") repeat-x;background-size:40px 14px;animation:wavemove 1.8s linear infinite}
+.wwave.w2{top:7px;animation-duration:2.7s;animation-direction:reverse;opacity:.5}
+@keyframes wavemove{from{background-position-x:0}to{background-position-x:40px}}
+.wdone{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:900;color:#fff;font-size:15px;text-shadow:0 1px 3px rgba(0,0,0,.3)}
+.wbtns{display:flex;gap:8px}
+.wbtn{flex:1;font-weight:800;font-size:14px;border-radius:14px;padding:11px 4px;background:var(--card);border:2px solid var(--line);box-shadow:var(--shadow);color:var(--blue-d);transition:transform .06s,box-shadow .06s}
+.wbtn:active{transform:translateY(2px);box-shadow:none}
+.wbtn.wcup{background:var(--blue);color:#fff;border-color:var(--blue);box-shadow:0 3px 0 var(--blue-d)}
+.wbtn.wcup:active{box-shadow:none}
+.wbtn.wminus{flex:0 0 46px;color:var(--ink2);font-size:20px;line-height:1}
+.wnudge{color:var(--blue-d);font-weight:700;margin-top:10px}
+
 /* buttons */
 .btn{display:block;width:100%;text-align:center;font-weight:900;font-size:16px;border-radius:16px;padding:13px;
   color:#fff;background:var(--green);box-shadow:0 4px 0 var(--green-d);transition:transform .06s,box-shadow .06s}
@@ -149,7 +166,7 @@ h1,h2,h3{margin:0;text-wrap:balance}
 .sheet{background:var(--bg);width:100%;max-width:480px;max-height:88vh;border-radius:24px 24px 0 0;padding:16px 16px 24px;
   overflow-y:auto;direction:rtl;animation:up .22s ease-out}
 @keyframes up{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
-@media (prefers-reduced-motion: reduce){ .sheet{animation:none} .mbar>div{transition:none} .confetti{display:none!important}}
+@media (prefers-reduced-motion: reduce){ .sheet{animation:none} .mbar>div{transition:none} .confetti{display:none!important} .wwave{animation:none} .wfill{transition:none}}
 .sheet h3{font-size:18px;font-weight:900;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
 .sheet .close{font-size:20px;color:var(--ink2);padding:4px 10px}
 .freebox{display:flex;gap:8px;margin-bottom:6px}
@@ -576,10 +593,13 @@ try{ localStorage.setItem("foxfit_probe","1");
   if(localStorage.getItem("foxfit_probe")!=="1") STORAGE_OK=false;
   localStorage.removeItem("foxfit_probe");
 }catch(e){ STORAGE_OK=false; }
-const DEF={settings:{kcal:2100,protein:160,carb:200,fat:70},days:{},weights:[],savedMeals:[],freq:{},ach:{},created:null};
+const DEF={settings:{kcal:2100,protein:160,carb:200,fat:70,water:12},days:{},weights:[],savedMeals:[],freq:{},ach:{},created:null};
 let S; try{ S=JSON.parse(localStorage.getItem(KEY))||null; }catch(e){ S=null; }
 if(!S) S=JSON.parse(JSON.stringify(DEF));
 if(!S.created){ S.created=todayStr(); }
+// --- מיגרציה לפיצ'ר המים: יעד 12 כוסות; ימים מ-waterStart ואילך נדרשים גם במים ל"יום מושלם" ---
+if(S.settings.water==null) S.settings.water=12;
+if(S.settings.waterStart==null) S.settings.waterStart=todayStr();
 function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} }
 function todayStr(d){ const x=d?new Date(d):new Date(); return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0"); }
 function addDays(ds,n){ const d=new Date(ds+"T12:00:00"); d.setDate(d.getDate()+n); return todayStr(d); }
@@ -602,7 +622,23 @@ function dayStatus(ds){ // 'none' | 'cheat' | 'in' | 'under' | 'over'
   return "in";
 }
 function isPerfect(ds){ const d=S.days[ds]; if(!d||d.cheat||!d.entries.length) return false;
-  const t=totals(ds),g=S.settings; return t.k>=g.kcal*0.9&&t.k<=g.kcal*1.1&&t.p>=g.protein*0.85; }
+  const t=totals(ds),g=S.settings;
+  const calOk=t.k>=g.kcal*0.9&&t.k<=g.kcal*1.1&&t.p>=g.protein*0.85;
+  if(!calOk) return false;
+  // מים נספרים ל"מושלם" רק מיום הפעלת הפיצ'ר ואילך (לא מעניש ימים ישנים)
+  if(g.waterStart && ds>=g.waterStart && (d.water||0) < (g.water||12)*0.8) return false;
+  return true; }
+/* יעד-קצב מים לפי שעת היום (חלון שתייה ~8:00–22:00) */
+function waterPace(){ const h=new Date().getHours()+new Date().getMinutes()/60;
+  return Math.max(0,Math.min(1,(h-8)/14)); }
+function waterNudge(ds){ // טקסט תזכורת עדינה, או null
+  if(ds!==todayStr()) return null;
+  const g=S.settings, cur=(S.days[ds]&&S.days[ds].water)||0, expect=(g.water||12)*waterPace();
+  if(new Date().getHours()<12) return null;
+  if(cur>=expect*0.75) return null;
+  const left=Math.max(0,Math.round((g.water||12)-cur));
+  return "שתית עד עכשיו "+ (cur%1?cur.toFixed(1):cur) +" כוסות — פוקסי צמא 💧 נשארו "+left+" להיום";
+}
 function streak(){ let n=0, ds=todayStr();
   if(!isLogged(ds)) ds=addDays(ds,-1); // grace: today not yet logged
   while(isLogged(ds)){ n++; ds=addDays(ds,-1); }
@@ -708,6 +744,7 @@ function renderToday(){
   const isToday=ds===todayStr();
   const entries=(d?d.entries:[]);
   const cw=cheatsThisWeek();
+  const wGoal=g.water||12, wCur=(d&&d.water)||0, wPct=Math.min(100,wCur/wGoal*100), wNudge=waterNudge(ds);
   return `
   <div class="datenav">
     <button onclick="nav_day(-1)" aria-label="יום קודם">‹</button>
@@ -738,6 +775,20 @@ function renderToday(){
     ${macroBar("פחמימות",t.c,g.carb,"var(--orange)")}
     ${macroBar("שומן",t.f,g.fat,"var(--purple)")}
   </div>
+  <div class="card watercard">
+    <h2>מים ${isToday?"היום":""} 💧 · <span class="num">${trimN(wCur)}/${wGoal}</span> כוסות <span class="wliters num">(${(wCur*0.25).toFixed(2).replace(".",",")} ל')</span></h2>
+    <div class="wtank" title="${trimN(wCur)} מתוך ${wGoal} כוסות">
+      <div class="wfill" style="width:${wPct}%"><div class="wwave"></div><div class="wwave w2"></div></div>
+      ${wCur>=wGoal?'<div class="wdone">💧 יעד הושלם!</div>':""}
+    </div>
+    <div class="wbtns">
+      <button class="wbtn wminus" onclick="addWater(-0.5)" aria-label="הפחת חצי כוס">－</button>
+      <button class="wbtn" onclick="addWater(0.25)">＋ לגימה</button>
+      <button class="wbtn" onclick="addWater(0.5)">＋ ½ כוס</button>
+      <button class="wbtn wcup" onclick="addWater(1)">＋ כוס</button>
+    </div>
+    ${wNudge?`<p class="hint wnudge">${esc(wNudge)}</p>`:""}
+  </div>
   <div class="card">
     <h2>מה אכלת ${isToday?"היום":"ביום הזה"}</h2>
     ${entries.length?entries.map(e=>`
@@ -759,6 +810,13 @@ function nav_day(n){ const nd=addDays(viewDate,n); if(nd>todayStr()) return; vie
 function delEntry(ds,id){ const d=S.days[ds]; if(!d) return; d.entries=d.entries.filter(e=>e.id!==id); save(); render(); }
 function toggleCheat(){ const d=dayObj(viewDate); d.cheat=!d.cheat; save();
   if(d.cheat){ toast("🍕 יום צ'יט נרשם — תהנה!"); } checkAch(); render(); }
+function addWater(n){ const d=dayObj(viewDate); const g=S.settings.water||12;
+  const before=d.water||0; d.water=Math.max(0,+((before)+n).toFixed(2));
+  save();
+  if(before<g && d.water>=g){ confetti(); toast("💧 עמדת ביעד המים היום! כל הכבוד"); }
+  else if(n>0){ const label=n>=1?"כוס":n>=0.5?"חצי כוס":"לגימה"; toast("💧 +"+label+" · "+trimN(d.water)+"/"+g+" כוסות"); }
+  checkAch(); render(); }
+const trimN=x=>x%1?(+x.toFixed(2)).toString().replace(".",","):String(x);
 
 /* ================= ADD SHEET ================= */
 let cart=[], sheetOpen=false, searchQ="", saveCombo=false, comboName="";
@@ -1039,6 +1097,7 @@ function openSettings(){
     <div class="setrow"><span>חלבון (גרם)</span><input id="s_p" type="number" value="${g.protein}"></div>
     <div class="setrow"><span>פחמימות (גרם)</span><input id="s_c" type="number" value="${g.carb}"></div>
     <div class="setrow"><span>שומן (גרם)</span><input id="s_f" type="number" value="${g.fat}"></div>
+    <div class="setrow"><span>מים — יעד כוסות ליום 💧</span><input id="s_w" type="number" value="${g.water}"></div>
     <button class="btn" onclick="saveSettings()">שמור יעדים ✓</button>
     <hr class="sep">
     <div class="about"><b>מאיפה המספרים?</b> היעדים חושבו לפי הנתונים שלך (זכר, 25, 80 ק"ג, 1.78 מ', 3 אימוני כוח בשבוע):
@@ -1062,6 +1121,7 @@ function saveSettings(){
   const g=S.settings;
   g.kcal=parseInt($("#s_k").value)||g.kcal; g.protein=parseInt($("#s_p").value)||g.protein;
   g.carb=parseInt($("#s_c").value)||g.carb; g.fat=parseInt($("#s_f").value)||g.fat;
+  g.water=parseInt($("#s_w").value)||g.water;
   save(); $("#ovl").remove(); toast("היעדים עודכנו ✓"); render();
 }
 function exportData(){ const ta=$("#iodata"); ta.value=JSON.stringify(S); ta.select();
@@ -1102,7 +1162,7 @@ function setTab(t){ tab=t; if(t==="today") viewDate=todayStr(); if(t==="hist") w
 document.addEventListener("click",e=>{ if(!e.target.closest("svg")) hideTip(); },true);
 
 /* expose for inline handlers */
-Object.assign(window,{nav_day,delEntry,toggleCheat,openAdd,closeSheet,cartQty,cartRm,doParse,loadCombo,quickFood,
+Object.assign(window,{nav_day,delEntry,toggleCheat,addWater,openAdd,closeSheet,cartQty,cartRm,doParse,loadCombo,quickFood,
   openCustom,commitCart,barTip,wTip,addWeight,delWeight,openSettings,saveSettings,exportData,importData,setTab,refreshList,renderSheet});
 window.searchQ=searchQ; // updated via oninput closure below
 Object.defineProperty(window,"searchQ",{get:()=>searchQ,set:v=>{searchQ=v;}});
