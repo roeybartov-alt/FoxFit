@@ -135,6 +135,53 @@ h1,h2,h3{margin:0;text-wrap:balance}
 .wbtn.wminus{flex:0 0 46px;color:var(--ink2);font-size:20px;line-height:1}
 .wnudge{color:var(--blue-d);font-weight:700;margin-top:10px}
 
+/* supplements card */
+.suppcard{padding:10px}
+.suppbtn{display:flex;align-items:center;gap:12px;width:100%;text-align:right;border-radius:14px;padding:10px 12px;
+  border:2px solid var(--line);background:var(--card2);transition:transform .06s,background .18s,border-color .18s}
+.suppbtn:active{transform:scale(.985)}
+.suppbtn.on{background:var(--green-soft);border-color:var(--green)}
+.suppbtn .sicon{font-size:26px;flex:none;filter:grayscale(1);opacity:.5;transition:filter .18s,opacity .18s,transform .18s}
+.suppbtn.on .sicon{filter:none;opacity:1;transform:scale(1.1)}
+.suppbtn .sbody{flex:1;min-width:0;display:flex;flex-direction:column}
+.suppbtn .stitle{font-weight:800;font-size:15px}
+.suppbtn .ssub{font-size:12.5px;color:var(--ink2);font-weight:600}
+.suppbtn.on .ssub{color:var(--green-d)}
+.suppbtn .scheck{flex:none;width:28px;height:28px;border-radius:9px;border:2px solid var(--line);background:var(--card);
+  display:flex;align-items:center;justify-content:center;font-weight:900;color:#fff;font-size:15px}
+.suppbtn.on .scheck{background:var(--green);border-color:var(--green)}
+
+/* custom food form */
+.cfform{margin-bottom:12px}
+.cfrow{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
+.cfrow>span{font-size:12.5px;font-weight:800;color:var(--ink2)}
+.cfrow input{width:100%;border:2px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--card);font-weight:700}
+.cfemoji{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
+.cfemoji>span{font-size:12.5px;font-weight:800;color:var(--ink2)}
+.cfemoji>input{width:64px;border:2px solid var(--line);border-radius:12px;padding:8px;background:var(--card);
+  font-weight:700;text-align:center;font-size:20px}
+.epick{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
+.epick button{font-size:19px;background:var(--card);border:2px solid var(--line);border-radius:10px;
+  width:36px;height:36px;line-height:1;box-shadow:var(--shadow)}
+.epick button:active{transform:translateY(2px);box-shadow:none}
+.cfgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.cfnum{display:flex;flex-direction:column;gap:5px}
+.cfnum>span{font-size:12.5px;font-weight:800;color:var(--ink2)}
+.cfnum input{width:100%;border:2px solid var(--line);border-radius:12px;padding:10px;background:var(--card);
+  font-weight:800;text-align:center}
+
+/* custom foods list (settings) */
+.cflist{border:2px solid var(--line);border-radius:14px;background:var(--card);max-height:230px;overflow-y:auto}
+.cfitem{display:flex;align-items:center;gap:9px;padding:8px 10px;border-bottom:1px solid var(--line)}
+.cfitem:last-child{border-bottom:none}
+.cfitem .fe{font-size:19px;flex:none}
+.cfitem .fi{flex:1;min-width:0}
+.cfitem .fn{font-weight:800;font-size:14px}
+.cfitem .fm{font-size:11.5px;color:var(--ink2);font-weight:600}
+.cfb{flex:none;padding:6px 7px;border-radius:9px;font-size:14px;color:var(--ink2)}
+.cfb:hover{background:var(--card2)}
+.cfb.del:hover{color:var(--red)}
+
 /* buttons */
 .btn{display:block;width:100%;text-align:center;font-weight:900;font-size:16px;border-radius:16px;padding:13px;
   color:#fff;background:var(--green);box-shadow:0 4px 0 var(--green-d);transition:transform .06s,box-shadow .06s}
@@ -183,6 +230,8 @@ h1,h2,h3{margin:0;text-wrap:balance}
 .fooditem:hover{background:var(--card2)}
 .fooditem .fe{font-size:19px}
 .fooditem .fn{font-weight:800;flex:1}
+.fooditem .mine{display:inline-block;margin-right:6px;background:var(--blue-soft);color:var(--blue-d);
+  border-radius:999px;padding:1px 7px;font-size:10.5px;font-weight:800;vertical-align:middle}
 .fooditem .fk{color:var(--ink2);font-weight:700;font-size:12.5px}
 .cart{margin-bottom:12px}
 .cartrow{display:flex;align-items:center;gap:8px;background:var(--card);border:2px solid var(--line);border-radius:14px;padding:8px 10px;margin-bottom:8px}
@@ -593,13 +642,23 @@ try{ localStorage.setItem("foxfit_probe","1");
   if(localStorage.getItem("foxfit_probe")!=="1") STORAGE_OK=false;
   localStorage.removeItem("foxfit_probe");
 }catch(e){ STORAGE_OK=false; }
-const DEF={settings:{kcal:2100,protein:160,carb:200,fat:70,water:12},days:{},weights:[],savedMeals:[],freq:{},ach:{},created:null};
+const DEF={settings:{kcal:2100,protein:160,carb:200,fat:70,water:12},days:{},weights:[],savedMeals:[],freq:{},ach:{},customFoods:[],created:null};
 let S; try{ S=JSON.parse(localStorage.getItem(KEY))||null; }catch(e){ S=null; }
 if(!S) S=JSON.parse(JSON.stringify(DEF));
 if(!S.created){ S.created=todayStr(); }
 // --- מיגרציה לפיצ'ר המים: יעד 12 כוסות; ימים מ-waterStart ואילך נדרשים גם במים ל"יום מושלם" ---
 if(S.settings.water==null) S.settings.water=12;
 if(S.settings.waterStart==null) S.settings.waterStart=todayStr();
+// --- מיגרציה למאכלים אישיים ---
+if(!Array.isArray(S.customFoods)) S.customFoods=[];
+/* מזריק את המאכלים האישיים לתוך FOODS — כך החיפוש, המהירים והפרסר החופשי מזהים אותם
+   בלי שינוי בלוגיקה. נדחפים *באותה הפניה* לאובייקט, כדי שעריכה ב-S.customFoods תעדכן גם את המאגר.
+   הם תמיד בסוף המערך, ולכן האינדקסים של המאכלים המובנים לא זזים. */
+function syncCustomFoods(){
+  for(let i=FOODS.length-1;i>=0;i--) if(FOODS[i].cu) FOODS.splice(i,1);
+  for(const cf of S.customFoods){ cf.syn=cf.syn||[]; cf.st=cf.st||1; cf.cu=1; FOODS.push(cf); }
+}
+syncCustomFoods();
 function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} }
 function todayStr(d){ const x=d?new Date(d):new Date(); return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0"); }
 function addDays(ds,n){ const d=new Date(ds+"T12:00:00"); d.setDate(d.getDate()+n); return todayStr(d); }
@@ -745,6 +804,7 @@ function renderToday(){
   const entries=(d?d.entries:[]);
   const cw=cheatsThisWeek();
   const wGoal=g.water||12, wCur=(d&&d.water)||0, wPct=Math.min(100,wCur/wGoal*100), wNudge=waterNudge(ds);
+  const supp=!!(d&&d.supp);
   return `
   <div class="datenav">
     <button onclick="nav_day(-1)" aria-label="יום קודם">‹</button>
@@ -789,6 +849,16 @@ function renderToday(){
     </div>
     ${wNudge?`<p class="hint wnudge">${esc(wNudge)}</p>`:""}
   </div>
+  <div class="card suppcard">
+    <button class="suppbtn ${supp?"on":""}" onclick="toggleSupp()" aria-pressed="${supp?"true":"false"}">
+      <span class="sicon">💊</span>
+      <span class="sbody">
+        <span class="stitle">תוספי תזונה</span>
+        <span class="ssub">${supp?(isToday?"לקחת היום — מעולה!":"נלקחו ביום הזה"):(isToday?"עוד לא סימנת היום":"לא סומן ביום הזה")}</span>
+      </span>
+      <span class="scheck">${supp?"✓":""}</span>
+    </button>
+  </div>
   <div class="card">
     <h2>מה אכלת ${isToday?"היום":"ביום הזה"}</h2>
     ${entries.length?entries.map(e=>`
@@ -810,6 +880,8 @@ function nav_day(n){ const nd=addDays(viewDate,n); if(nd>todayStr()) return; vie
 function delEntry(ds,id){ const d=S.days[ds]; if(!d) return; d.entries=d.entries.filter(e=>e.id!==id); save(); render(); }
 function toggleCheat(){ const d=dayObj(viewDate); d.cheat=!d.cheat; save();
   if(d.cheat){ toast("🍕 יום צ'יט נרשם — תהנה!"); } checkAch(); render(); }
+function toggleSupp(){ const d=dayObj(viewDate); d.supp=!d.supp; save();
+  if(d.supp) toast("💊 תוספים סומנו ✓"); render(); }
 function addWater(n){ const d=dayObj(viewDate); const g=S.settings.water||12;
   const before=d.water||0; d.water=Math.max(0,+((before)+n).toFixed(2));
   save();
@@ -819,9 +891,9 @@ function addWater(n){ const d=dayObj(viewDate); const g=S.settings.water||12;
 const trimN=x=>x%1?(+x.toFixed(2)).toString().replace(".",","):String(x);
 
 /* ================= ADD SHEET ================= */
-let cart=[], sheetOpen=false, searchQ="", saveCombo=false, comboName="";
-function openAdd(){ cart=[]; searchQ=""; saveCombo=false; comboName=""; sheetOpen=true; renderSheet(); }
-function closeSheet(){ sheetOpen=false; const o=$("#ovl"); if(o) o.remove(); }
+let cart=[], sheetOpen=false, searchQ="", saveCombo=false, comboName="", customOpen=false;
+function openAdd(){ cart=[]; searchQ=""; saveCombo=false; comboName=""; customOpen=false; sheetOpen=true; renderSheet(); }
+function closeSheet(){ sheetOpen=false; customOpen=false; const o=$("#ovl"); if(o) o.remove(); }
 function cartRow(it,i){
   return `<div class="cartrow">
     <span class="fe">${it.emoji}</span>
@@ -853,13 +925,24 @@ function searchResults(){
     list=FOODS.slice(0,12);
   }
   return list.map(f=>`<button class="fooditem" onclick="quickFood(${FOODS.indexOf(f)})">
-    <span class="fe">${f.e}</span><span class="fn">${esc(f.n)}</span>
+    <span class="fe">${f.e}</span><span class="fn">${esc(f.n)}${f.cu?'<span class="mine">שלך</span>':""}</span>
     <span class="fk num">${fmt(f.k)} קק"ל / ${esc(f.u)}</span></button>`).join("")||'<div class="empty">לא נמצא — נסה מילה אחרת או הוסף מזון חופשי</div>';
 }
 function renderSheet(){
   let o=$("#ovl");
   if(!o){ o=document.createElement("div"); o.className="overlay"; o.id="ovl";
     o.addEventListener("click",e=>{ if(e.target===o) closeSheet(); }); document.body.appendChild(o); }
+  if(customOpen){
+    o.innerHTML=`<div class="sheet" dir="rtl">
+      <h3>מזון חופשי (הזנה ידנית) <button class="close" onclick="closeCustom()" aria-label="חזרה">✕</button></h3>
+      <p class="hint">רשום בערך — פוקסי לא צריך דיוק. הפריט יתווסף ליומן <b>וגם יישמר במאגר</b>, כך שבפעם הבאה פשוט תחפש אותו.</p>
+      ${cfFields(null)}
+      <button class="btn" onclick="saveCustom()">הוסף ושמור במאגר ✓</button>
+      <button class="btn ghost" style="margin-top:8px" onclick="closeCustom()">ביטול</button>
+    </div>`;
+    const nf=$("#cf_n"); if(nf) nf.focus();
+    return;
+  }
   const tk=cart.reduce((a,i)=>a+i.per.k*i.qty,0);
   o.innerHTML=`<div class="sheet" dir="rtl">
     <h3>מה אכלת? <button class="close" onclick="closeSheet()" aria-label="סגור">✕</button></h3>
@@ -904,14 +987,56 @@ function doParse(){
 function loadCombo(id){ const m=S.savedMeals.find(x=>x.id===id); if(!m) return;
   for(const it of m.items) cart.push(JSON.parse(JSON.stringify(it)));
   m.used=(m.used||0)+1; save(); renderSheet(); }
-function openCustom(){
-  const name=prompt("שם המאכל:"); if(!name) return;
-  const k=parseFloat(prompt('קלוריות (בערך):',"200"))||0;
-  const p=parseFloat(prompt("חלבון בגרם (בערך):","10"))||0;
-  const c=parseFloat(prompt("פחמימות בגרם (בערך):","20"))||0;
-  const f2=parseFloat(prompt("שומן בגרם (בערך):","8"))||0;
-  cart.push({name,emoji:"🍽️",unit:"מנה",qty:1,st:1,per:{k,p,c,f:f2}});
-  renderSheet();
+/* ================= CUSTOM FOODS (מאכלים אישיים) ================= */
+const EMOJIS=["🍽️","🥗","🍲","🥪","🍗","🍚","🍝","🥤","🍰","🥜","🍌","🧀","🥑","🍳","🌯","🍫"];
+/* שדות הטופס — משותפים למסך ההוספה ולעריכה מההגדרות */
+function cfFields(v){
+  v=v||{};
+  const val=x=>x==null||x===""?"":x;
+  return `<div class="cfform">
+    <label class="cfrow"><span>שם המאכל</span>
+      <input id="cf_n" value="${esc(val(v.n))}" placeholder="למשל: הסלט של אמא"></label>
+    <label class="cfrow"><span>יחידה — כל המספרים למטה הם ליחידה אחת</span>
+      <input id="cf_u" value="${esc(val(v.u))}" placeholder="מנה / 100 גרם / יחידה / כוס"></label>
+    <div class="cfemoji"><span>אימוג'י</span>
+      <input id="cf_e" value="${esc(val(v.e))}" maxlength="4" placeholder="🍽️">
+      <div class="epick">${EMOJIS.map(e=>`<button type="button" onclick="pickEmoji('${e}')" aria-label="בחר ${e}">${e}</button>`).join("")}</div>
+    </div>
+    <div class="cfgrid">
+      <label class="cfnum"><span>קלוריות</span><input id="cf_k" type="number" inputmode="decimal" value="${esc(val(v.k))}" placeholder="0"></label>
+      <label class="cfnum"><span>חלבון (ג')</span><input id="cf_p" type="number" inputmode="decimal" value="${esc(val(v.p))}" placeholder="0"></label>
+      <label class="cfnum"><span>פחמימות (ג')</span><input id="cf_c" type="number" inputmode="decimal" value="${esc(val(v.c))}" placeholder="0"></label>
+      <label class="cfnum"><span>שומן (ג')</span><input id="cf_f" type="number" inputmode="decimal" value="${esc(val(v.f))}" placeholder="0"></label>
+    </div>
+  </div>`;
+}
+function pickEmoji(e){ const i=$("#cf_e"); if(i) i.value=e; }
+/* קורא את הטופס ומחזיר אובייקט מאכל תקין, או null אם משהו חסר (עם toast מסביר) */
+function readCF(){
+  const n=$("#cf_n").value.trim();
+  if(!n){ toast("צריך שם למאכל 🤔"); return null; }
+  const k=parseFloat($("#cf_k").value)||0, p=parseFloat($("#cf_p").value)||0;
+  const c=parseFloat($("#cf_c").value)||0, f2=parseFloat($("#cf_f").value)||0;
+  if(!k&&!p&&!c&&!f2){ toast("הזן לפחות קלוריות 🤔"); return null; }
+  return {n, e:$("#cf_e").value.trim()||"🍽️", u:$("#cf_u").value.trim()||"מנה", k, p, c, f:f2};
+}
+function openCustom(){ customOpen=true; renderSheet(); }
+function closeCustom(){ customOpen=false; renderSheet(); }
+function saveCustom(){
+  const v=readCF(); if(!v) return;
+  const ex=S.customFoods.find(x=>x.n===v.n);
+  let food;
+  if(ex){ Object.assign(ex,v); food=ex; toast('"'+v.n+'" עודכן במאגר ✓'); }
+  else{
+    food={e:v.e,n:v.n,u:v.u,k:v.k,p:v.p,c:v.c,f:v.f,syn:[],st:1,cu:1};
+    S.customFoods.push(food); FOODS.push(food);
+    // שם שכבר קיים במאגר המובנה — נשמר בנפרד, אבל שווה להתריע
+    if(FOODS.some(x=>!x.cu&&x.n===v.n)) toast('שים לב: "'+v.n+'" כבר קיים במאגר — שלך נוסף בנפרד');
+    else toast('"'+v.n+'" נשמר במאגר ✓');
+  }
+  save();
+  customOpen=false;
+  addToCart(food,1); // מרנדר מחדש את הגיליון
 }
 function commitCart(){
   if(!cart.length) return;
@@ -1104,6 +1229,11 @@ function openSettings(){
     BMR ‏~1,790 קק"ל (נוסחת Mifflin-St Jeor), הוצאה יומית ~2,550, וגירעון של ~450 קק"ל — קצב ירידה של כ־0.5% ממשקל הגוף בשבוע,
     הקצב שהמחקר מצא כאופטימלי לשמירה על שריר. חלבון: ~2 ג' לק"ג. כשתרד ~4-5 ק"ג, כדאי לעדכן את היעד כ־50 קק"ל למטה.</div>
     <hr class="sep">
+    <div class="cfsec">
+      <h2 style="font-size:12px;font-weight:800;color:var(--ink2);letter-spacing:.8px;margin:0 0 8px">המאכלים שלי (${S.customFoods.length})</h2>
+      ${customFoodsHTML()}
+    </div>
+    <hr class="sep">
     <div class="io">
       <h2 style="font-size:12px;font-weight:800;color:var(--ink2);letter-spacing:.8px;margin:0 0 8px">גיבוי נתונים</h2>
       <textarea id="iodata" placeholder="הדבק כאן גיבוי כדי לשחזר"></textarea>
@@ -1117,6 +1247,43 @@ function openSettings(){
   </div>`;
   document.body.appendChild(o);
 }
+function customFoodsHTML(){
+  if(!S.customFoods.length)
+    return '<p class="hint" style="margin:0">עוד לא הוספת מאכלים משלך. כל פריט שתוסיף דרך "מזון חופשי" במסך הוספת האוכל יישמר כאן — ויופיע בחיפוש ובכתיבה החופשית.</p>';
+  return '<div class="cflist">'+S.customFoods.map((f,i)=>`
+    <div class="cfitem">
+      <span class="fe">${f.e}</span>
+      <div class="fi"><div class="fn">${esc(f.n)}</div>
+        <div class="fm num">${fmt(f.k)} קק"ל · ${fmt(f.p)} ח' · ${fmt(f.c)} פ' · ${fmt(f.f)} ש' · ל${esc(f.u)}</div></div>
+      <button class="cfb" onclick="editCustom(${i})" aria-label="ערוך את ${esc(f.n)}">✏️</button>
+      <button class="cfb del" onclick="delCustom(${i})" aria-label="מחק את ${esc(f.n)}">✕</button>
+    </div>`).join("")+"</div>";
+}
+let cfEdit=-1;
+function editCustom(i){
+  const v=S.customFoods[i]; if(!v) return;
+  cfEdit=i;
+  const o=$("#ovl"); if(!o) return;
+  o.innerHTML=`<div class="sheet" dir="rtl">
+    <h3>עריכת מאכל <button class="close" onclick="backToSettings()" aria-label="חזרה">✕</button></h3>
+    <p class="hint">שינוי הערכים כאן ישפיע על רישומים <b>עתידיים</b> בלבד — מה שכבר נרשם ביומן נשאר כפי שהיה.</p>
+    ${cfFields(v)}
+    <button class="btn" onclick="saveCustomEdit()">שמור שינויים ✓</button>
+    <button class="btn ghost" style="margin-top:8px" onclick="backToSettings()">חזרה להגדרות</button>
+  </div>`;
+}
+function saveCustomEdit(){
+  const t=S.customFoods[cfEdit]; if(!t) return;
+  const v=readCF(); if(!v) return;
+  Object.assign(t,v); // FOODS מחזיק את אותה הפניה — המאגר מתעדכן מעצמו
+  save(); toast('"'+v.n+'" עודכן ✓'); backToSettings();
+}
+function delCustom(i){
+  const v=S.customFoods[i]; if(!v) return;
+  if(!confirm('למחוק את "'+v.n+'" מהמאגר?\nרישומים קיימים ביומן לא יושפעו.')) return;
+  S.customFoods.splice(i,1); syncCustomFoods(); save(); toast("נמחק מהמאגר"); backToSettings();
+}
+function backToSettings(){ cfEdit=-1; const o=$("#ovl"); if(o) o.remove(); openSettings(); }
 function saveSettings(){
   const g=S.settings;
   g.kcal=parseInt($("#s_k").value)||g.kcal; g.protein=parseInt($("#s_p").value)||g.protein;
@@ -1128,7 +1295,10 @@ function exportData(){ const ta=$("#iodata"); ta.value=JSON.stringify(S); ta.sel
   try{ document.execCommand("copy"); toast("הגיבוי הועתק 📋"); }catch(e){ toast("סמן והעתק ידנית"); } }
 function importData(){ const ta=$("#iodata");
   try{ const d=JSON.parse(ta.value); if(!d.settings||!d.days) throw 0;
-    S=d; save(); $("#ovl").remove(); toast("שוחזר בהצלחה ✓"); render(); }
+    S=d;
+    if(!Array.isArray(S.customFoods)) S.customFoods=[]; // גיבוי מגרסה ישנה
+    syncCustomFoods(); // חובה: FOODS עדיין מחזיק את המאכלים האישיים הישנים
+    save(); $("#ovl").remove(); toast("שוחזר בהצלחה ✓"); render(); }
   catch(e){ toast("הגיבוי לא תקין 🤔"); } }
 
 /* ================= MAIN RENDER ================= */
